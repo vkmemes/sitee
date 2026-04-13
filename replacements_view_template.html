@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Замены</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { font-family: sans-serif; -webkit-tap-highlight-color: transparent; } .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
+    <div class="max-w-2xl mx-auto min-h-screen flex flex-col">
+        <header class="sticky top-0 z-40 glass border-b border-slate-200/80 px-4 py-4 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="window.history.back()" class="p-2 -ml-2 rounded-full active:bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button>
+                <div class="text-center"><h1 class="font-bold text-xl text-slate-900 leading-none">Все замены</h1><p class="text-[11px] font-bold text-blue-600 uppercase tracking-widest mt-1 bg-blue-50 px-2 py-0.5 rounded inline-block">{{ clean_date }}</p></div><div class="w-8"></div>
+            </div>
+            <div class="relative">
+                <input type="text" id="search-input" onkeyup="filterList()" placeholder="Поиск..." class="w-full pl-4 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+        </header>
+
+        <main class="flex-1 p-4">
+            <div id="replacements-list" class="space-y-3">
+                {% for r in replacements %}
+                    {% set raw_text = r.subject_new.lower() %}
+                    {% set is_simple_cancel = ('отмена' in raw_text or 'снято' in raw_text or 'нет пары' in raw_text) and (raw_text|length < 20) %}
+                    <div class="bg-white p-4 rounded-xl border shadow-sm item" data-s="{{ r.groups|join(' ') }} {{ r.subject_new }}">
+                        <div class="flex justify-between mb-2">
+                            <div class="flex gap-1 flex-wrap">{% for g in r.groups %}<span class="bg-slate-800 text-white text-[10px] px-2 py-0.5 rounded">{{ g }}</span>{% endfor %}</div>
+                            <div class="w-6 h-6 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center font-bold text-xs">{{ r.pair_num }}</div>
+                        </div>
+                        <div class="font-bold">{% if is_simple_cancel %}🚫 ОТМЕНА{% else %}{{ r.subject_new }}{% endif %}</div>
+                        {% if r.room %}<div class="text-xs text-slate-500 mt-1">Каб. {{ r.room }}</div>{% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+    <script>
+        function filterList() {
+            let q = document.getElementById('search-input').value.toLowerCase();
+            document.querySelectorAll('.item').forEach(el => el.style.display = el.dataset.s.toLowerCase().includes(q) ? 'block' : 'none');
+        }
+    </script>
+</body>
+</html>

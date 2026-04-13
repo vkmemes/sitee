@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+    <title>Выбор группы | Расписание ЯГК</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'media' } 
+    </script>
+    <style>
+        body { font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        .group-card:active { transform: scale(0.97); }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 min-h-screen transition-colors duration-300">
+    <div class="max-w-md mx-auto p-6">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-black text-slate-900 dark:text-white">Расписание <span class="text-blue-600">ЯГК</span></h1>
+            <a href="https://bus.gradygk.ru" target="_blank" class="p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm text-blue-600 dark:text-blue-400 transition-all hover:bg-blue-50 dark:hover:bg-slate-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+            </a>
+        </div>
+
+        <!-- Избранное -->
+        <div id="saved-group-area" class="mb-8 hidden">
+            <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Твоя группа</p>
+            <div onclick="goToSaved()" class="bg-blue-600 dark:bg-blue-700 p-6 rounded-[2rem] shadow-xl shadow-blue-500/20 text-white flex justify-between items-center cursor-pointer group-card transition-transform">
+                <div>
+                    <h2 id="saved-name" class="text-2xl font-black tracking-tight"></h2>
+                    <p class="text-blue-100 text-xs mt-1 font-medium">Нажми, чтобы открыть</p>
+                </div>
+                <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="relative mb-8">
+            <input type="text" id="search" onkeyup="filter()" placeholder="Поиск группы..." 
+                   class="w-full p-5 pl-14 rounded-3xl border-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-2 focus:ring-blue-500 transition-all outline-none placeholder-slate-400 font-medium text-lg">
+            <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div id="list" class="grid grid-cols-2 gap-4 pb-12">
+            {% for group in groups %}
+            <div onclick="go('{{ group }}')" class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-transparent dark:border-slate-800 cursor-pointer group-card transition-all hover:border-blue-500 group-item flex items-center justify-center" data-name="{{ group|lower }}">
+                <span class="font-black text-slate-800 dark:text-slate-100 text-xl tracking-tight">{{ group }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center pb-8">
+            <a href="https://bus.gradygk.ru" class="text-slate-400 dark:text-slate-500 text-xs font-bold flex items-center justify-center gap-2 hover:text-blue-500 transition-colors uppercase tracking-widest">
+                <span>🚌 Проверить автобусы</span>
+            </a>
+        </footer>
+    </div>
+
+    <script>
+        const SAVED_KEY = 'my_group_sttec';
+        window.onload = () => {
+            const saved = localStorage.getItem(SAVED_KEY);
+            if (saved) {
+                document.getElementById('saved-name').innerText = saved;
+                document.getElementById('saved-group-area').classList.remove('hidden');
+            }
+        };
+        function go(g) { window.location.href = `/schedule/${encodeURIComponent(g)}`; }
+        function goToSaved() { go(localStorage.getItem(SAVED_KEY)); }
+        function filter() {
+            const q = document.getElementById('search').value.toLowerCase();
+            const items = document.querySelectorAll('.group-item');
+            items.forEach(el => el.style.display = el.getAttribute('data-name').includes(q) ? "" : "none");
+        }
+    </script>
+</body>
+</html>
